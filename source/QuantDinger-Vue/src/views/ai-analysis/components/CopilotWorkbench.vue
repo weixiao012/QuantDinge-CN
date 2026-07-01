@@ -3418,12 +3418,15 @@ export default {
       const includesAny = patterns => patterns.some(pattern => pattern.test ? pattern.test(text) : lower.includes(pattern))
       if (includesAny([
         /local-only|not implemented/i,
-        /llm|large language model|provider|model provider|api key|apikey|base url|openrouter|openai|anthropic|deepseek|atlascloud/i,
+        /llm|large language model|provider|model provider|api key|apikey|base url|openrouter|openai|anthropic|deepseek|atlascloud|model is not available|not available in your region/i,
         '大模型',
         '模型供应商',
         '模型提供商',
         '接口密钥',
         '密钥',
+        '模型不可用',
+        '地区无法使用',
+        '地区限制',
         '未接入'
       ])) return 'llm'
       if (includesAny([

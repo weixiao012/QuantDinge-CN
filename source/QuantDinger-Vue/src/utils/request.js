@@ -130,8 +130,28 @@ function normalizeBusinessErrorMessage (message, error) {
   return message
 }
 
+function isTimeoutError (error) {
+  const msg = String((error && error.message) || '')
+  return error && (
+    error.code === 'ECONNABORTED' ||
+    error.code === 'ETIMEDOUT' ||
+    /timeout|timed out/i.test(msg)
+  )
+}
+
+function normalizeTimeoutErrorMessage (error) {
+  if (!isTimeoutError(error)) return ''
+  const timeout = Number(error && error.config && error.config.timeout)
+  const seconds = Number.isFinite(timeout) && timeout > 0 ? Math.round(timeout / 1000) : 30
+  return tf(
+    'request.timeoutExternalProvider',
+    'Request timed out after {seconds}s. The backend is reachable, but the external LLM or data provider did not return in time. Check the LLM model, API key, region restrictions, provider balance, or data-source network.',
+    { seconds }
+  )
+}
+
 function attachBackendErrorMessage (error) {
-  const message = normalizeBusinessErrorMessage(getBackendErrorMessage(error), error)
+  const message = normalizeTimeoutErrorMessage(error) || normalizeBusinessErrorMessage(getBackendErrorMessage(error), error)
   if (!message) return error
   error.backendMessage = message
   try {
@@ -191,7 +211,10 @@ request.interceptors.request.use(config => {
   if (config.url && isDefaultTimeout) {
     if (config.url.includes('/backtest/aiAnalyze')) {
       config.timeout = ANALYSIS_TIMEOUT
-    } else if (config.url.includes('/strategies/ai-generate') || config.url.includes('/indicator/aiGenerate')) {
+    } else if (config.url.includes('/strategies/ai-generate') ||
+      config.url.includes('/indicator/aiGenerate') ||
+      config.url.includes('/api/ai/chat/message') ||
+      config.url.includes('/api/ai/agent/intent')) {
       config.timeout = AI_GENERATE_TIMEOUT
     } else if (config.url.includes('/global-market/heatmap')) {
       config.timeout = 90000

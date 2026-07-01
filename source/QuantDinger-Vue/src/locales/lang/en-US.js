@@ -3317,6 +3317,7 @@ const locale = {
   'request.forbiddenDesc': 'You do not have permission to perform this action.',
   'request.unauthorizedTitle': 'Unauthorized',
   'request.unauthorizedDesc': 'Token invalid or expired, please login again.',
+  'request.timeoutExternalProvider': 'Request timed out after {seconds}s. The backend is reachable, but the external LLM or data provider did not return in time. Check the LLM model, API key, region restrictions, provider balance, or data-source network.',
   'request.liveStrategyConflict': 'Live strategy conflict: only one live strategy can run for the same API key / exchange / market type / symbol ({scope}). Please stop strategy {target} first.',
   'request.gridSpacingTooNarrow': 'Grid spacing is too narrow after fees: worst cell [{cell}] captures about {captures}% but needs about {required}% to cover round-trip fees ({fee}% per side plus safety buffer). Widen the price range, reduce grid count, or lower fee settings.',
   'request.backtestRangeLimit': 'Backtest range is too long for {market}:{symbol} {timeframe}. This provider supports up to {maxRange} ({maxDays} days), but this run needs {fetchDays} days{warmupNote}. Use {recommendedStart} to {requestedEnd}, or keep {requestedStart} and set the end date to {recommendedEnd}.',

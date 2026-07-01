@@ -3162,6 +3162,7 @@ const locale = {
   'request.forbiddenDesc': '您没有执行此操作的权限。',
   'request.unauthorizedTitle': '未登录',
   'request.unauthorizedDesc': '登录已失效，请重新登录。',
+  'request.timeoutExternalProvider': '请求超过 {seconds} 秒仍未返回。后端服务是可访问的，但外部大模型或数据源响应过慢/不可用。请检查 LLM 模型、API Key、地区限制、供应商余额或数据源网络。',
   'request.liveStrategyConflict': '实盘策略冲突：同一个 API Key / 交易所 / 市场类型 / 交易对同时只能运行一个实盘策略（{scope}）。请先停止策略 {target}。',
   'request.gridSpacingTooNarrow': '网格间距过窄，扣除手续费后可能亏损：最差格子 [{cell}] 约捕获 {captures}%，但需要约 {required}% 才能覆盖双边手续费（单边 {fee}% 加安全缓冲）。请扩大价格区间、减少网格数量，或降低手续费设置。',
   'request.backtestRangeLimit': '回测区间过长：{market}:{symbol} {timeframe} 当前数据源最多支持 {maxRange}（{maxDays} 天），本次需要 {fetchDays} 天{warmupNote}。建议改为 {recommendedStart} 至 {requestedEnd}，或保持开始日期 {requestedStart} 并把结束日期改为 {recommendedEnd}。',

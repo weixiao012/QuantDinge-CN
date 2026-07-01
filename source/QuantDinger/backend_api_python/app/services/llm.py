@@ -291,33 +291,7 @@ class LLMService:
         
         # Handle non-2xx with provider/model-aware details
         if response.status_code >= 400:
-            provider_name = "OpenRouter" if "openrouter" in (base_url or "").lower() else "LLM"
-            error_msg = f"{provider_name} API {response.status_code}"
-            err_text = ""
-            try:
-                error_data = response.json() or {}
-                error_detail = error_data.get("error")
-                if isinstance(error_detail, dict):
-                    err_text = str(error_detail.get("message") or "").strip()
-                elif isinstance(error_detail, str):
-                    err_text = error_detail.strip()
-            except Exception:
-                err_text = (response.text or "").strip()[:300]
-
-            if err_text:
-                error_msg = f"{error_msg}: {err_text}"
-
-            # OpenRouter targeted hints
-            if "openrouter" in (base_url or "").lower():
-                from app.config.api_keys import APIKeys
-                if not APIKeys.OPENROUTER_API_KEY:
-                    error_msg += ". OPENROUTER_API_KEY 未配置，请在 backend_api_python/.env 中设置"
-                elif response.status_code == 403:
-                    error_msg += ". 可能原因：API 密钥无效/过期、余额不足、或无模型权限。请检查 https://openrouter.ai/keys"
-                elif response.status_code == 404:
-                    error_msg += ". 可能原因：模型不可用或账户隐私/数据策略限制。请检查 https://openrouter.ai/settings/privacy"
-
-            raise ValueError(error_msg)
+            raise ValueError(self._format_openai_compatible_error(response, base_url, model))
         
         result = response.json()
         if "choices" in result and len(result["choices"]) > 0:
@@ -327,6 +301,44 @@ class LLMService:
             return content
         else:
             raise ValueError("API response is missing 'choices'")
+
+    def _format_openai_compatible_error(self, response, base_url: str, model: str = "") -> str:
+        """Build a user-facing error for OpenAI-compatible provider failures."""
+        provider_name = "OpenRouter" if "openrouter" in (base_url or "").lower() else "LLM"
+        model_suffix = f" ({model})" if model else ""
+        error_msg = f"{provider_name} API {response.status_code}{model_suffix}"
+        err_text = ""
+        try:
+            error_data = response.json() or {}
+            error_detail = error_data.get("error")
+            if isinstance(error_detail, dict):
+                err_text = str(error_detail.get("message") or "").strip()
+            elif isinstance(error_detail, str):
+                err_text = error_detail.strip()
+        except Exception:
+            err_text = (response.text or "").strip()[:300]
+
+        if err_text:
+            error_msg = f"{error_msg}: {err_text}"
+
+        if "openrouter" in (base_url or "").lower():
+            from app.config.api_keys import APIKeys
+            lower = err_text.lower()
+            if not APIKeys.OPENROUTER_API_KEY:
+                error_msg += ". OPENROUTER_API_KEY 未配置，请在 backend_api_python/.env 中设置"
+            elif response.status_code == 403:
+                if "not available in your region" in lower or "region" in lower:
+                    error_msg += ". 可能原因：当前地区无法使用该模型。请在 OpenRouter 选择你账户和地区可用的模型，或切换到可访问的 LLM_PROVIDER。"
+                else:
+                    error_msg += ". 可能原因：API 密钥无效/过期、余额不足、模型权限不足、或地区限制。请检查 https://openrouter.ai/keys"
+            elif response.status_code == 404:
+                error_msg += ". 可能原因：模型不存在、模型不可用，或账户隐私/数据策略限制。请检查 https://openrouter.ai/settings/privacy"
+            elif response.status_code == 402:
+                error_msg += ". 可能原因：OpenRouter 余额不足或该模型需要付费额度。"
+            elif response.status_code == 429:
+                error_msg += ". 可能原因：OpenRouter 触发限流，请稍后重试或更换模型。"
+
+        return error_msg
 
     def _call_google_gemini(self, messages: list, model: str, temperature: float,
                            api_key: str, base_url: str, timeout: int) -> str:
@@ -450,17 +462,12 @@ class LLMService:
         }
         response = self._llm_post(url, headers=headers, json_payload=data, timeout=timeout, stream=True)
         if response.status_code >= 400:
-            err_text = ""
-            try:
-                err = response.json().get("error")
-                err_text = err.get("message") if isinstance(err, dict) else str(err or "")
-            except Exception:
-                err_text = (response.text or "").strip()[:300]
+            error_msg = self._format_openai_compatible_error(response, base_url, model)
             session = getattr(response, "_quantdinger_llm_session", None)
             response.close()
             if session is not None:
                 session.close()
-            raise ValueError(f"LLM API {response.status_code}: {err_text}".strip())
+            raise ValueError(error_msg)
 
         try:
             for raw_line in response.iter_lines(decode_unicode=False):
