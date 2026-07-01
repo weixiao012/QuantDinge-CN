@@ -1,0 +1,11 @@
+﻿backend.env
+.env
+.env.local
+.env.*.local
+node_modules/
+dist/
+.next/
+.vite/
+.cache/
+*.log
+deploy/cloudflare/config.yml
