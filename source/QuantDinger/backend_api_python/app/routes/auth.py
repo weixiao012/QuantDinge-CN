@@ -92,10 +92,13 @@ def get_security_config():
         registration_enabled: bool
         oauth_google_enabled: bool
         oauth_github_enabled: bool
+        email_configured: bool
     """
     try:
         from app.services.security_service import get_security_service
+        from app.services.email_service import get_email_service
         config = get_security_service().get_security_config()
+        config['email_configured'] = get_email_service().is_configured()
         return jsonify({'code': 1, 'msg': 'success', 'data': config})
     except Exception as e:
         logger.error(f"get_security_config error: {e}")

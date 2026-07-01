@@ -107,6 +107,13 @@
             >
               <a-alert v-if="codeLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="codeLoginError" />
               <a-alert v-if="oauthError" type="error" showIcon style="margin-bottom: 24px;" :message="oauthError" />
+              <a-alert
+                v-if="!securityConfig.email_configured"
+                type="warning"
+                showIcon
+                style="margin-bottom: 24px;"
+                :message="$t('user.login.emailNotConfigured') || 'QQ email SMTP is not configured yet. Verification codes cannot be sent.'"
+              />
 
               <a-form-item>
                 <a-input
@@ -150,7 +157,7 @@
                       size="large"
                       block
                       :loading="codeLoginSendingCode"
-                      :disabled="codeLoginSendingCode || codeLoginCountdown > 0 || (securityConfig.turnstile_enabled && !codeLoginTurnstileToken)"
+                      :disabled="!securityConfig.email_configured || codeLoginSendingCode || codeLoginCountdown > 0 || (securityConfig.turnstile_enabled && !codeLoginTurnstileToken)"
                       @click="handleCodeLoginSendCode"
                     >
                       {{ codeLoginCountdown > 0 ? `${codeLoginCountdown}s` : ($t('user.login.sendCode') || 'Send') }}
@@ -681,7 +688,8 @@ export default {
         turnstile_site_key: '',
         registration_enabled: true,
         oauth_google_enabled: false,
-        oauth_github_enabled: false
+        oauth_github_enabled: false,
+        email_configured: false
       },
 
       // OAuth
@@ -692,7 +700,7 @@ export default {
       referralCode: '',
 
       // Login Method
-      loginMethod: 'password', // 'password' or 'code'
+      loginMethod: 'code', // 'password' or 'code'
 
       // Password Login
       loginForm: this.$form.createForm(this, { name: 'loginForm' }),

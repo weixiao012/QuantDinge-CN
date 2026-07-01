@@ -1121,6 +1121,7 @@ const locale = {
   'user.login.sendCode': 'Send',
   'user.login.codeSent': 'Verification code sent',
   'user.login.codeLoginHint': 'New users will be auto-registered',
+  'user.login.emailNotConfigured': 'QQ email SMTP is not configured yet. Verification codes cannot be sent until the QQ email and SMTP authorization code are set.',
   'user.login.welcomeNew': 'Welcome!',
   'user.login.accountCreated': 'Your account has been created',
 

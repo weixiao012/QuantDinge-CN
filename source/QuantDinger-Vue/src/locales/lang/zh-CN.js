@@ -1159,6 +1159,7 @@ const locale = {
   'user.login.sendCode': '发送',
   'user.login.codeSent': '验证码已发送',
   'user.login.codeLoginHint': '新用户将自动注册',
+  'user.login.emailNotConfigured': 'QQ 邮箱 SMTP 尚未配置，暂时无法发送验证码。请先填写 QQ 邮箱和 SMTP 授权码。',
   'user.login.welcomeNew': '欢迎!',
   'user.login.accountCreated': '您的账户已创建成功',
 

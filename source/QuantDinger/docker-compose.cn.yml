@@ -1,4 +1,8 @@
 services:
+  backend:
+    image: quantdinger-backend-cn:local
+    pull_policy: never
+
   frontend:
     image: quantdinger-frontend-cn:local
     pull_policy: never
